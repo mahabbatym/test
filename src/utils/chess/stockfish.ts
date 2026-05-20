@@ -2,8 +2,25 @@ import type { Square } from "chess.js";
 
 import type { PromotionPiece } from "@/features/chess";
 
-export const STOCKFISH_WORKER_URL =
+// 1. Бастапқы CDN сілтемесін ішкі айнымалы ретінде сақтаймыз
+const RAW_STOCKFISH_WORKER_URL =
   "https://cdn.jsdelivr.net/npm/stockfish.wasm@0.10.0/stockfish.worker.js";
+
+// 2. Браузердің қауіпсіздік саясатын айналып өту үшін дайын Blob URL жасаймыз
+let secureWorkerUrl = RAW_STOCKFISH_WORKER_URL;
+
+if (typeof window !== "undefined") {
+  try {
+    const blobCode = `importScripts("${RAW_STOCKFISH_WORKER_URL}");`;
+    const blob = new Blob([blobCode], { type: "application/javascript" });
+    secureWorkerUrl = URL.createObjectURL(blob);
+  } catch (error) {
+    console.warn("Blob URL құру сәтсіз аяқталды, ескі сілтеме қолданылады:", error);
+  }
+}
+
+// Басқа файлдар осы қауіпсіз сілтемені пайдаланатын болады
+export const STOCKFISH_WORKER_URL = secureWorkerUrl;
 
 export const STOCKFISH_DEFAULT_LEVEL = 4;
 
