@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fffafa;
+  --foreground: #161314;
+  --muted: #756c70;
+  --muted-foreground: #756c70;
+  --border: #eadfe2;
+  --cherry: #dc2626;
+  --cherry-dark: #b91c1c;
+  --cherry-light: #ef4444;
+  --accent: var(--cherry);
+  --accent-foreground: #ffffff;
+  --card: #ffffff;
+  --card-foreground: var(--foreground);
+  --board-light: #f4e4cf;
+  --board-dark: #a96d47;
+  --board-last-move: #f4b7b7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #090b10;
+    --foreground: #f8fafc;
+    --muted: #9aa3b2;
+    --muted-foreground: #9aa3b2;
+    --border: #242936;
+    --cherry: #ef4444;
+    --cherry-dark: #dc2626;
+    --cherry-light: #f87171;
+    --card: #10131a;
+    --board-light: #d5b88d;
+    --board-dark: #6d4a35;
+    --board-last-move: #5f2228;
+  }
+}
+
+.dark {
+  --background: #090b10;
+  --foreground: #f8fafc;
+  --muted: #9aa3b2;
+  --muted-foreground: #9aa3b2;
+  --border: #242936;
+  --cherry: #ef4444;
+  --cherry-dark: #dc2626;
+  --cherry-light: #f87171;
+  --card: #10131a;
+  --board-light: #d5b88d;
+  --board-dark: #6d4a35;
+  --board-last-move: #5f2228;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-cherry: var(--cherry);
+  --color-cherry-dark: var(--cherry-dark);
+  --color-cherry-light: var(--cherry-light);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-board-light: var(--board-light);
+  --color-board-dark: var(--board-dark);
+  --color-board-last-move: var(--board-last-move);
+  --color-board-legal-move: var(--cherry);
+  --color-board-highlight: var(--cherry);
+  --color-primary: var(--cherry);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: color-mix(in srgb, var(--foreground) 8%, var(--background));
+  --color-destructive: #dc2626;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+.check-glow {
+  box-shadow:
+    inset 0 0 0 3px rgb(220 38 38 / 0.88),
+    inset 0 0 22px rgb(220 38 38 / 0.32);
+  background-color: rgb(220 38 38 / 0.28) !important;
+  animation: check-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes check-pulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 3px rgb(220 38 38 / 0.85),
+      inset 0 0 22px rgb(220 38 38 / 0.28);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 5px rgb(248 113 113 / 0.95),
+      inset 0 0 30px rgb(248 113 113 / 0.38);
+  }
+}
+
+.cherry-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+}
+
+.cherry-skeleton::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--foreground) 10%, transparent),
+    transparent
+  );
+  animation: skeleton-sheen 1.45s ease-in-out infinite;
+}
+
+@keyframes skeleton-sheen {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
