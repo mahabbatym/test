@@ -20,7 +20,7 @@ if (typeof window !== "undefined") {
 }
 
 // Басқа файлдар осы қауіпсіз сілтемені пайдаланатын болады
-export const STOCKFISH_WORKER_URL = secureWorkerUrl;
+export const STOCKFISH_WORKER_URL = "/workers/stockfish.worker.js";
 
 export const STOCKFISH_DEFAULT_LEVEL = 4;
 

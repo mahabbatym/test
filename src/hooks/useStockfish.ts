@@ -127,7 +127,11 @@ export function useStockfish(): UseStockfishResult {
     setEvaluation(null);
   }, []);
 
-  useEffect(() => {
+ useEffect(() => {
+    // Браузер ортасы екенін және URL-дің бар екенін тексеру
+    if (typeof window === "undefined" || !STOCKFISH_WORKER_URL) return;
+
+    // Next.js үшін локальді папкадан Worker-ді қауіпсіз құру
     const worker = new Worker(STOCKFISH_WORKER_URL);
     workerRef.current = worker;
 
@@ -143,6 +147,8 @@ export function useStockfish(): UseStockfishResult {
       if (line === "uciok") {
         worker.postMessage("setoption name Threads value 1");
         worker.postMessage("setoption name Hash value 16");
+        // Болашақта .wasm файлын қатесіз табуы үшін локальді папканы нұсқаймыз
+        worker.postMessage("setoption name WebAssemblyPath value /workers/");
         worker.postMessage("isready");
         return;
       }
@@ -198,7 +204,8 @@ export function useStockfish(): UseStockfishResult {
       setStatus("ready");
     };
 
-    worker.onerror = () => {
+    worker.onerror = (err) => {
+      console.error("Stockfish Worker қатесі:", err);
       setError("Unable to load Stockfish.");
       setStatus("error");
       readyRejecterRef.current?.(new Error("Unable to load Stockfish"));
