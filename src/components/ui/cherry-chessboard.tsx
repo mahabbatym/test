@@ -18,18 +18,16 @@ import {
   VolumeX,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { Square as ChessSquare, PieceSymbol } from "chess.js";
+import {
+  Chess,
+  type PieceSymbol,
+  type Square as ChessSquare,
+} from "chess.js";
 
 import { CherryLogo } from "@/components/auth/cherry-logo";
 import { Button } from "@/components/ui/button";
-import {
-  coordsToSquare,
-  findKingSquare,
-  getBoardMatrix,
-  squareToCoords,
-  type BoardCell,
-  type PromotionPiece,
-} from "@/features/chess";
+import { ChessgroundBoard } from "@/components/ui/chessground-board";
+import type { PromotionPiece } from "@/features/chess";
 import {
   finishGameAction,
   persistMoveAction,
@@ -56,6 +54,10 @@ import {
   type StockfishDifficultyLevel,
   type StockfishEvaluation,
 } from "@/utils/chess/stockfish";
+import type {
+  Dests,
+  Key as ChessgroundKey,
+} from "@/vendor/chessground/src/types";
 
 // UI piece types (SVG rendering)
 type PieceType = "K" | "Q" | "R" | "B" | "N" | "P";
@@ -71,16 +73,45 @@ const PIECE_SYMBOL_MAP: Record<PieceSymbol, PieceType> = {
   p: "P",
 };
 
-function toUIPiece(cell: BoardCell): Piece | null {
-  if (!cell) return null;
-  return {
-    type: PIECE_SYMBOL_MAP[cell.type],
-    color: cell.color === "w" ? "white" : "black",
-  };
-}
-
 function turnToColor(turn: "w" | "b"): PieceColor {
   return turn === "w" ? "white" : "black";
+}
+
+function getCapturedPiecesFromPgn(pgn: string): {
+  byWhite: Piece[];
+  byBlack: Piece[];
+} {
+  if (!pgn.trim()) {
+    return { byWhite: [], byBlack: [] };
+  }
+
+  try {
+    const chess = new Chess();
+    chess.loadPgn(pgn, { strict: false });
+    return chess
+      .history({ verbose: true })
+      .reduce<{ byWhite: Piece[]; byBlack: Piece[] }>(
+        (captured, move) => {
+          if (!move.captured) return captured;
+
+          const piece: Piece = {
+            type: PIECE_SYMBOL_MAP[move.captured],
+            color: move.color === "w" ? "black" : "white",
+          };
+
+          if (move.color === "w") {
+            captured.byWhite.push(piece);
+          } else {
+            captured.byBlack.push(piece);
+          }
+
+          return captured;
+        },
+        { byWhite: [], byBlack: [] },
+      );
+  } catch {
+    return { byWhite: [], byBlack: [] };
+  }
 }
 
 // Chess piece SVG components
@@ -372,16 +403,13 @@ export default function CherryChessboard({
   onNewGame,
 }: CherryChessboardProps) {
   const router = useRouter();
-  const { gameState, makeMove, reset, loadFen, loadPgn, getLegalMoves, engine } =
+  const { gameState, makeMove, reset, loadFen, loadPgn, getLegalMoves } =
     useChessStore();
   const { t } = useI18n();
 
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  const [selectedSquare, setSelectedSquare] = useState<ChessSquare | null>(null);
-  const [legalTargets, setLegalTargets] = useState<ChessSquare[]>([]);
   const [isFlipped, setIsFlipped] = useState(playerColor === "black");
-  const [draggedFrom, setDraggedFrom] = useState<ChessSquare | null>(null);
   const [promotionChoice, setPromotionChoice] = useState<{
     from: ChessSquare;
     to: ChessSquare;
@@ -469,19 +497,20 @@ export default function CherryChessboard({
         ? "Loading engine..."
         : `Level ${aiLevel}`;
 
-  const boardMatrix = getBoardMatrix(engine.getChess());
-  const uiBoard = boardMatrix.map((row) => row.map(toUIPiece));
+  const legalDests: Dests = new Map();
+  for (const move of getLegalMoves()) {
+    const from = move.from as ChessgroundKey;
+    const to = move.to as ChessgroundKey;
+    const targets = legalDests.get(from) ?? [];
+    if (!targets.includes(to)) {
+      targets.push(to);
+    }
+    legalDests.set(from, targets);
+  }
 
-  const kingInCheckSquare = gameState.isCheck
-    ? findKingSquare(engine.getChess(), gameState.turn)
-    : null;
-
-  const lastMoveCoords = useMemo(() => {
+  const lastMoveSquares = useMemo<[ChessSquare, ChessSquare] | null>(() => {
     if (!gameState.lastMove) return null;
-    return {
-      from: squareToCoords(gameState.lastMove.from),
-      to: squareToCoords(gameState.lastMove.to),
-    };
+    return [gameState.lastMove.from, gameState.lastMove.to];
   }, [gameState.lastMove]);
 
   useEffect(() => {
@@ -503,6 +532,12 @@ export default function CherryChessboard({
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
+
+  useEffect(() => {
+    const captured = getCapturedPiecesFromPgn(gameState.pgn);
+    setCapturedByWhite(captured.byWhite);
+    setCapturedByBlack(captured.byBlack);
+  }, [gameState.pgn]);
 
   useEffect(() => {
     return () => {
@@ -891,20 +926,6 @@ export default function CherryChessboard({
     userId,
   ]);
 
-  const clearSelection = useCallback(() => {
-    setSelectedSquare(null);
-    setLegalTargets([]);
-  }, []);
-
-  const selectSquare = useCallback(
-    (square: ChessSquare) => {
-      const moves = getLegalMoves(square);
-      setSelectedSquare(square);
-      setLegalTargets(moves.map((m) => m.to));
-    },
-    [getLegalMoves],
-  );
-
   const commitMove = useCallback(
     async (from: ChessSquare, to: ChessSquare, promotion?: PromotionPiece) => {
       const result = makeMove({ from, to, promotion });
@@ -926,9 +947,7 @@ export default function CherryChessboard({
         playSoundCue("move");
       }
 
-      clearSelection();
       setPromotionChoice(null);
-      setDraggedFrom(null);
 
       const saved = await persistMoveToDb(
         result.state,
@@ -961,7 +980,6 @@ export default function CherryChessboard({
     },
     [
       makeMove,
-      clearSelection,
       persistMoveToDb,
       mode,
       broadcastMove,
@@ -1062,10 +1080,10 @@ export default function CherryChessboard({
 
   const attemptMove = useCallback(
     (from: ChessSquare, to: ChessSquare) => {
-      if (!isInteractive) return;
+      if (!isInteractive) return false;
 
       const candidates = getLegalMoves(from).filter((m) => m.to === to);
-      if (candidates.length === 0) return;
+      if (candidates.length === 0) return false;
 
       const promotions = candidates.filter((m) => m.flags.isPromotion);
       if (promotions.length > 1) {
@@ -1073,87 +1091,14 @@ export default function CherryChessboard({
           .map((m) => m.promotion)
           .filter((p): p is PromotionPiece => p !== undefined);
         setPromotionChoice({ from, to, options });
-        return;
+        return false;
       }
 
       const promotion = candidates[0]?.promotion;
       void commitMove(from, to, promotion);
+      return true;
     },
     [commitMove, getLegalMoves, isInteractive],
-  );
-
-  const handleSquareClick = useCallback(
-    (row: number, col: number) => {
-      if (!isInteractive) return;
-
-      const square = coordsToSquare(row, col);
-      const cell = boardMatrix[row][col];
-      const uiPiece = toUIPiece(cell);
-
-      if (selectedSquare && legalTargets.includes(square)) {
-        attemptMove(selectedSquare, square);
-        return;
-      }
-
-      if (uiPiece && uiPiece.color === currentTurn) {
-        selectSquare(square);
-        return;
-      }
-
-      clearSelection();
-    },
-    [
-      attemptMove,
-      boardMatrix,
-      clearSelection,
-      currentTurn,
-      isInteractive,
-      legalTargets,
-      selectSquare,
-      selectedSquare,
-    ],
-  );
-
-  const handleDragStart = useCallback(
-    (event: React.DragEvent<HTMLDivElement>, row: number, col: number) => {
-      if (!isInteractive) return;
-
-      const square = coordsToSquare(row, col);
-      const cell = boardMatrix[row][col];
-      const uiPiece = toUIPiece(cell);
-
-      if (uiPiece && uiPiece.color === currentTurn) {
-        event.dataTransfer.effectAllowed = "move";
-        event.dataTransfer.setData("text/plain", square);
-        setDraggedFrom(square);
-        selectSquare(square);
-      }
-    },
-    [boardMatrix, currentTurn, isInteractive, selectSquare],
-  );
-
-  const handleDragEnd = useCallback(() => {
-    setDraggedFrom(null);
-  }, []);
-
-  const handleDrop = useCallback(
-    (row: number, col: number) => {
-      if (!draggedFrom || !isInteractive) return;
-      const to = coordsToSquare(row, col);
-      if (legalTargets.includes(to)) {
-        attemptMove(draggedFrom, to);
-      } else {
-        clearSelection();
-      }
-      setDraggedFrom(null);
-    },
-    [
-      attemptMove,
-      clearSelection,
-      draggedFrom,
-      isInteractive,
-      legalTargets,
-    ],
   );
 
   const handleResign = useCallback(async () => {
@@ -1190,7 +1135,6 @@ export default function CherryChessboard({
     setHasDbFinished(false);
     setSyncError(null);
     reset();
-    clearSelection();
     setPromotionChoice(null);
     setCapturedByWhite([]);
     setCapturedByBlack([]);
@@ -1204,7 +1148,6 @@ export default function CherryChessboard({
     onNewGame?.();
   }, [
     blackPlayerId,
-    clearSelection,
     initialBlackTimeMs,
     initialWhiteTimeMs,
     onNewGame,
@@ -1250,11 +1193,9 @@ export default function CherryChessboard({
   const ranks = ["8", "7", "6", "5", "4", "3", "2", "1"];
 
   const renderBoard = () => {
-    const displayBoard = isFlipped
-      ? [...uiBoard].reverse().map((row) => [...row].reverse())
-      : uiBoard;
     const displayFiles = isFlipped ? [...files].reverse() : files;
     const displayRanks = isFlipped ? [...ranks].reverse() : ranks;
+    const orientation = isFlipped ? "black" : "white";
 
     return (
       <div className="relative aspect-square w-full">
@@ -1280,93 +1221,19 @@ export default function CherryChessboard({
           ))}
         </div>
 
-        <div className="border-border grid grid-cols-8 overflow-hidden rounded-lg border shadow-lg shadow-black/10 dark:shadow-black/40">
-          {displayBoard.map((row, rowIdx) =>
-            row.map((piece, colIdx) => {
-              const actualRow = isFlipped ? 7 - rowIdx : rowIdx;
-              const actualCol = isFlipped ? 7 - colIdx : colIdx;
-              const square = coordsToSquare(actualRow, actualCol);
-              const isLight = (rowIdx + colIdx) % 2 === 0;
-              const isSelected = selectedSquare === square;
-              const isLegalTarget = legalTargets.includes(square);
-              const isLastMoveSquare =
-                lastMoveCoords &&
-                ((lastMoveCoords.from.row === actualRow &&
-                  lastMoveCoords.from.col === actualCol) ||
-                  (lastMoveCoords.to.row === actualRow &&
-                    lastMoveCoords.to.col === actualCol));
-              const isKingInCheckSquare =
-                kingInCheckSquare === square;
-              const isDragging =
-                draggedFrom === square;
-              const hasEnemy = Boolean(piece && isLegalTarget);
-              const isCaptureSquare = captureSquare === square;
-
-              return (
-                <motion.div
-                  key={`${rowIdx}-${colIdx}`}
-                  layout
-                  transition={{ duration: 0.16, ease: "easeOut" }}
-                  className={cn(
-                    "relative flex aspect-square cursor-pointer items-center justify-center transition-all duration-200",
-                    isLight ? "bg-board-light" : "bg-board-dark",
-                    isSelected && "ring-primary ring-2 ring-inset brightness-105",
-                    isLastMoveSquare && "bg-board-last-move",
-                    isKingInCheckSquare && "check-glow",
-                    isCaptureSquare &&
-                      "ring-cherry/80 bg-cherry/25 ring-4 ring-inset",
-                    !isInteractive && "cursor-not-allowed opacity-90",
-                  )}
-                  onClick={() => handleSquareClick(actualRow, actualCol)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => handleDrop(actualRow, actualCol)}
-                >
-                  {isLegalTarget && !hasEnemy && (
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                      <div className="bg-board-legal-move/80 size-3 rounded-full shadow-[0_0_18px_rgba(220,38,38,0.38)]" />
-                    </div>
-                  )}
-
-                  {hasEnemy && (
-                    <div className="ring-board-highlight/70 pointer-events-none absolute inset-1 rounded-full ring-2 shadow-[inset_0_0_18px_rgba(220,38,38,0.28)]" />
-                  )}
-
-                  {piece && (
-                    <motion.div
-                      layout
-                      whileHover={
-                        isInteractive && piece.color === currentTurn
-                          ? { scale: 1.08 }
-                          : undefined
-                      }
-                      whileTap={
-                        isInteractive && piece.color === currentTurn
-                          ? { scale: 0.96 }
-                          : undefined
-                      }
-                      draggable={isInteractive && piece.color === currentTurn}
-                      onDragStartCapture={(event) =>
-                        handleDragStart(event, actualRow, actualCol)
-                      }
-                      onDragEnd={handleDragEnd}
-                      className={cn(
-                        "h-[80%] w-[80%] transform-gpu transition-[opacity,filter] duration-150 select-none will-change-transform",
-                        piece.color === currentTurn &&
-                          "cursor-grab active:cursor-grabbing",
-                        isDragging && "opacity-35 blur-[0.5px]",
-                      )}
-                    >
-                      <ChessPiece
-                        type={piece.type}
-                        color={piece.color}
-                        className="size-full drop-shadow-md"
-                      />
-                    </motion.div>
-                  )}
-                </motion.div>
-              );
-            }),
-          )}
+        <div className="border-border relative aspect-square overflow-hidden rounded-lg border shadow-lg shadow-black/10 dark:shadow-black/40">
+          <ChessgroundBoard
+            fen={gameState.fen}
+            orientation={orientation}
+            turnColor={currentTurn}
+            movableColor={currentTurn}
+            interactive={isInteractive}
+            legalDests={legalDests}
+            lastMove={lastMoveSquares}
+            check={gameState.isCheck ? currentTurn : false}
+            captureSquare={captureSquare}
+            onMove={attemptMove}
+          />
         </div>
       </div>
     );

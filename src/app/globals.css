@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "../vendor/chessground/assets/chessground.base.css";
+@import "../vendor/chessground/assets/chessground.cburnett.css";
 
 :root {
   --background: #fffafa;
@@ -82,6 +84,103 @@
     inset 0 0 22px rgb(220 38 38 / 0.32);
   background-color: rgb(220 38 38 / 0.28) !important;
   animation: check-pulse 1.2s ease-in-out infinite;
+}
+
+.cherry-cg-board,
+.cherry-cg-board .cg-wrap {
+  width: 100%;
+  height: 100%;
+}
+
+.cherry-cg-board .cg-wrap {
+  overflow: hidden;
+}
+
+.cherry-cg-board cg-board {
+  background-color: var(--board-light);
+  background-image:
+    linear-gradient(
+      45deg,
+      var(--board-dark) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--board-dark) 75%,
+      var(--board-dark)
+    ),
+    linear-gradient(
+      45deg,
+      var(--board-dark) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--board-dark) 75%,
+      var(--board-dark)
+    );
+  background-position:
+    0 0,
+    12.5% 12.5%;
+  background-size: 25% 25%;
+}
+
+.cherry-cg-board .cg-wrap.manipulable cg-board {
+  cursor: pointer;
+}
+
+.cherry-cg-board .cg-wrap piece {
+  filter: drop-shadow(0 10px 9px rgb(0 0 0 / 0.18));
+  transition: filter 150ms ease;
+}
+
+.cherry-cg-board .cg-wrap piece.dragging {
+  cursor: grabbing;
+  filter: drop-shadow(0 16px 16px rgb(0 0 0 / 0.28));
+}
+
+.cherry-cg-board cg-board square.move-dest {
+  background: radial-gradient(
+    color-mix(in srgb, var(--cherry) 70%, transparent) 21%,
+    transparent 23%
+  );
+}
+
+.cherry-cg-board cg-board square.oc.move-dest {
+  background: radial-gradient(
+    transparent 0%,
+    transparent 78%,
+    color-mix(in srgb, var(--cherry) 42%, transparent) 80%
+  );
+}
+
+.cherry-cg-board cg-board square.move-dest:hover,
+.cherry-cg-board cg-board square.move-dest.hover {
+  background-color: color-mix(in srgb, var(--cherry) 24%, transparent);
+}
+
+.cherry-cg-board cg-board square.last-move {
+  background-color: color-mix(
+    in srgb,
+    var(--board-last-move) 78%,
+    transparent
+  );
+}
+
+.cherry-cg-board cg-board square.selected {
+  background-color: color-mix(in srgb, var(--cherry) 34%, transparent);
+  box-shadow: inset 0 0 0 2px var(--cherry);
+}
+
+.cherry-cg-board cg-board square.check {
+  background: radial-gradient(
+    ellipse at center,
+    rgb(220 38 38 / 0.9) 0%,
+    rgb(220 38 38 / 0.72) 28%,
+    rgb(220 38 38 / 0) 74%
+  );
+  animation: check-pulse 1.2s ease-in-out infinite;
+}
+
+.cherry-cg-board cg-board square.cherry-capture-square {
+  background-color: color-mix(in srgb, var(--cherry) 28%, transparent);
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--cherry) 80%, transparent);
 }
 
 @keyframes check-pulse {
