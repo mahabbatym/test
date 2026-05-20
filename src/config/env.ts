@@ -18,7 +18,8 @@ const clientEnvSchema = z.object({
     .string()
     .default("")
     .transform(emptyToUndefined)
-    .pipe(z.string().url()),
+    .pipe(z.string().url().optional())
+    .transform((v) => v ?? "http://localhost:3000"),
   NEXT_PUBLIC_SOCKET_URL: optionalUrl,
 });
 

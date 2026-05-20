@@ -22,7 +22,7 @@ export default function DashboardPage() {
               Start a match, review progression, and jump into premium systems.
             </p>
           </div>
-          <Link href="/play">
+          <Link href="/play/local">
             <Button className="gap-2">
               <Swords className="size-4" />
               Play now
@@ -36,7 +36,7 @@ export default function DashboardPage() {
               title: "Solo AI Ladder",
               text: "Eight explicit Stockfish stages with escalating rewards.",
               icon: Bot,
-              href: "/play",
+              href: "/play/local",
             },
             {
               title: "Leaderboard",

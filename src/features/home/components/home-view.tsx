@@ -23,18 +23,18 @@ export function HomeView() {
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link href="/dashboard">
+          <Link href="/play/local">
             <Button
               size="lg"
               className="bg-cherry hover:bg-cherry-dark gap-2 text-white"
             >
               <Crown className="size-4" />
-              Open dashboard
+              Play now
             </Button>
           </Link>
-          <Link href="/signup">
+          <Link href="/dashboard">
             <Button size="lg" variant="secondary">
-              Create free account
+              Open dashboard
             </Button>
           </Link>
         </div>

@@ -128,11 +128,24 @@ export function useStockfish(): UseStockfishResult {
   }, []);
 
  useEffect(() => {
-    // Браузер ортасы екенін және URL-дің бар екенін тексеру
     if (typeof window === "undefined" || !STOCKFISH_WORKER_URL) return;
 
-    // Next.js үшін локальді папкадан Worker-ді қауіпсіз құру
-    const worker = new Worker(STOCKFISH_WORKER_URL);
+    let worker: Worker;
+    try {
+      worker = new Worker(STOCKFISH_WORKER_URL);
+    } catch {
+      // Fallback: load via Blob URL if direct path fails (e.g. CORS)
+      try {
+        const code = `importScripts("${window.location.origin}${STOCKFISH_WORKER_URL}");`;
+        const blob = new Blob([code], { type: "application/javascript" });
+        worker = new Worker(URL.createObjectURL(blob));
+      } catch (fallbackError) {
+        console.error("Failed to create Stockfish worker:", fallbackError);
+        setError("Unable to load Stockfish engine.");
+        setStatus("error");
+        return;
+      }
+    }
     workerRef.current = worker;
 
     readyPromiseRef.current = new Promise<void>((resolve, reject) => {
@@ -148,7 +161,7 @@ export function useStockfish(): UseStockfishResult {
         worker.postMessage("setoption name Threads value 1");
         worker.postMessage("setoption name Hash value 16");
         // Болашақта .wasm файлын қатесіз табуы үшін локальді папканы нұсқаймыз
-        worker.postMessage("setoption name WebAssemblyPath value /workers/");
+        worker.postMessage("setoption name WebAssemblyPath value /workers/package/");
         worker.postMessage("isready");
         return;
       }
