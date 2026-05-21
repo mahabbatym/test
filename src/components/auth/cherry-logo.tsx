@@ -60,7 +60,7 @@ export function CherryLogo({
       >
         <span>Ch</span>
         <CherryMark className={s.mark} />
-        <span>rry</span>
+        <span>erry</span>
       </p>
       {variant === "stacked" ? (
         <p

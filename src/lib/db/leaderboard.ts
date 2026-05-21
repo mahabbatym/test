@@ -27,6 +27,7 @@ export type LeaderboardEntry = {
   wins: number;
   losses: number;
   isCurrentUser: boolean;
+  isSample: boolean;
 };
 
 export type LeaderboardData = {
@@ -35,6 +36,7 @@ export type LeaderboardData = {
   cityOptions: string[];
   entries: LeaderboardEntry[];
   currentPlayer: LeaderboardEntry | null;
+  hasSampleEntries: boolean;
 };
 
 export type GetLeaderboardOptions = {
@@ -58,6 +60,59 @@ const DEFAULT_CITY_OPTIONS = [
   "Тараз",
 ];
 const MISSING_COLUMN_CODE = "42703";
+
+const SAMPLE_LEADERBOARD: Array<
+  Pick<LeaderboardEntry, "id" | "username" | "city" | "eloRating" | "wins" | "losses">
+> = [
+  {
+    id: "demo-aurora",
+    username: "Aurora Serik",
+    city: "Алматы",
+    eloRating: 2120,
+    wins: 48,
+    losses: 12,
+  },
+  {
+    id: "demo-mura",
+    username: "Murat Han",
+    city: "Астана",
+    eloRating: 2055,
+    wins: 36,
+    losses: 9,
+  },
+  {
+    id: "demo-jade",
+    username: "Jade Kim",
+    city: "Сеул",
+    eloRating: 1990,
+    wins: 31,
+    losses: 11,
+  },
+  {
+    id: "demo-roman",
+    username: "Roman Petrov",
+    city: "Москва",
+    eloRating: 1920,
+    wins: 28,
+    losses: 14,
+  },
+  {
+    id: "demo-ayan",
+    username: "Ayan K.",
+    city: "Шымкент",
+    eloRating: 1885,
+    wins: 25,
+    losses: 15,
+  },
+  {
+    id: "demo-samira",
+    username: "Samira Noor",
+    city: "Алматы",
+    eloRating: 1860,
+    wins: 22,
+    losses: 13,
+  },
+];
 
 function normalizeCity(city?: string | null) {
   const value = city?.trim();
@@ -153,6 +208,7 @@ function buildEntry(
     wins: stats?.wins ?? 0,
     losses: stats?.losses ?? 0,
     isCurrentUser: profile.id === currentUserId,
+    isSample: false,
   };
 }
 
@@ -411,6 +467,26 @@ export async function getLeaderboard(
     buildEntry(profile, index + 1, stats.get(profile.id), currentUserId),
   );
 
+  let hasSampleEntries = false;
+
+  if (!selectedCity && entries.length < 8) {
+    hasSampleEntries = true;
+    const needed = 8 - entries.length;
+    const sampleEntries = SAMPLE_LEADERBOARD.slice(0, needed).map((sample, index) => ({
+      id: sample.id,
+      rank: entries.length + index + 1,
+      username: sample.username,
+      city: sample.city,
+      eloRating: sample.eloRating,
+      wins: sample.wins,
+      losses: sample.losses,
+      isCurrentUser: false,
+      isSample: true,
+    }));
+
+    entries.push(...sampleEntries);
+  }
+
   const visibleCurrentEntry = entries.find((entry) => entry.isCurrentUser);
   const currentPlayer =
     visibleCurrentEntry ??
@@ -429,5 +505,6 @@ export async function getLeaderboard(
     cityOptions,
     entries,
     currentPlayer,
+    hasSampleEntries,
   };
 }

@@ -6,9 +6,14 @@ import type { Database } from "@/types/database";
 import { getSupabaseEnv, isSupabaseConfigured } from "./env";
 
 const PROTECTED_PREFIXES = ["/play"];
+const UNPROTECTED_ROUTES = ["/play/guest"];
 const AUTH_PATHS = ["/login", "/signup"];
 
 function isProtectedRoute(pathname: string) {
+  if (UNPROTECTED_ROUTES.some((route) => pathname.startsWith(route))) {
+    return false;
+  }
+
   return PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );

@@ -14,6 +14,7 @@ export {
   type LeaderboardEntry,
   type LeaderboardScope,
 } from "./leaderboard";
+export { getDashboardData, type DashboardData } from "./dashboard";
 export {
   createNewGame,
   ensureUserProfile,

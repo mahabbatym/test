@@ -52,9 +52,24 @@ function getInitials(username: string) {
     .toUpperCase();
 }
 
-function PlayerAvatar({ username, rank }: { username: string; rank: number }) {
+function PlayerAvatar({
+  username,
+  rank,
+  isSample,
+}: {
+  username: string;
+  rank: number;
+  isSample: boolean;
+}) {
   return (
-    <div className="bg-cherry/10 text-cherry flex size-10 shrink-0 items-center justify-center rounded-lg text-sm font-semibold">
+    <div
+      className={cn(
+        "flex size-10 shrink-0 items-center justify-center rounded-lg text-sm font-semibold",
+        isSample
+          ? "bg-foreground/5 text-muted"
+          : "bg-cherry/10 text-cherry",
+      )}
+    >
       {rank <= 3 ? rank : getInitials(username)}
     </div>
   );
@@ -76,11 +91,16 @@ function PodiumCard({
         "border-border bg-card rounded-lg border p-5 shadow-sm",
         accent.className,
         entry.isCurrentUser && "bg-red-500/10 ring-cherry/30 ring-1",
+        entry.isSample && "bg-foreground/[0.02]",
       )}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <PlayerAvatar username={entry.username} rank={entry.rank} />
+          <PlayerAvatar
+            username={entry.username}
+            rank={entry.rank}
+            isSample={entry.isSample}
+          />
           <div className="min-w-0">
             <h2 className="truncate text-base font-semibold tracking-tight">
               {entry.username}
@@ -90,6 +110,11 @@ function PodiumCard({
             </p>
           </div>
         </div>
+        {entry.isSample ? (
+          <span className="text-muted text-xs font-medium uppercase tracking-wide">
+            Demo
+          </span>
+        ) : (
         <div
           className={cn(
             "flex size-9 shrink-0 items-center justify-center rounded-lg",
@@ -98,6 +123,7 @@ function PodiumCard({
         >
           <Icon className="size-4" />
         </div>
+        )}
       </div>
 
       <div className="mt-7 flex items-end justify-between gap-4">
@@ -127,14 +153,29 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
     <tr
       className={cn(
         "border-border border-b transition-colors last:border-0",
-        entry.isCurrentUser ? "bg-red-500/10" : "hover:bg-foreground/[0.03]",
+        entry.isCurrentUser
+          ? "bg-red-500/10"
+          : entry.isSample
+            ? "bg-foreground/[0.015] text-muted"
+            : "hover:bg-foreground/[0.03]",
       )}
     >
       <td className="w-20 px-4 py-4 text-sm font-semibold">#{entry.rank}</td>
       <td className="px-4 py-4">
         <div className="flex min-w-48 items-center gap-3">
-          <PlayerAvatar username={entry.username} rank={entry.rank} />
-          <span className="truncate text-sm font-medium">{entry.username}</span>
+          <PlayerAvatar
+            username={entry.username}
+            rank={entry.rank}
+            isSample={entry.isSample}
+          />
+          <span className="truncate text-sm font-medium">
+            {entry.username}
+            {entry.isSample ? (
+              <span className="text-muted ml-2 text-xs uppercase tracking-wide">
+                Demo
+              </span>
+            ) : null}
+          </span>
         </div>
       </td>
       <td className="text-muted px-4 py-4 text-sm">
@@ -155,7 +196,11 @@ function CurrentRankCard({ entry }: { entry: LeaderboardEntry }) {
     <section className="border-cherry/30 bg-red-500/10 rounded-lg border p-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <PlayerAvatar username={entry.username} rank={entry.rank} />
+          <PlayerAvatar
+            username={entry.username}
+            rank={entry.rank}
+            isSample={entry.isSample}
+          />
           <div>
             <p className="text-sm font-semibold">{entry.username}</p>
             <p className="text-muted text-sm">
@@ -193,6 +238,8 @@ export default async function LeaderboardPage({
   const podium = leaderboard.entries.slice(0, 3);
   const tableRows = leaderboard.entries.slice(3);
   const currentPlayer = leaderboard.currentPlayer;
+  const realEntryCount = leaderboard.entries.filter((entry) => !entry.isSample).length;
+  const sampleEntryCount = leaderboard.entries.length - realEntryCount;
   const currentPlayerOutsideList =
     currentPlayer &&
     !leaderboard.entries.some((entry) => entry.id === currentPlayer.id);
@@ -212,6 +259,7 @@ export default async function LeaderboardPage({
             </h1>
             <p className="text-muted mt-3 max-w-2xl text-sm leading-6">
               Top Cherry Chess players ranked by live ELO.
+              {leaderboard.hasSampleEntries ? " Demo players fill the board until the real ladder heats up." : ""}
             </p>
           </div>
 
@@ -220,6 +268,12 @@ export default async function LeaderboardPage({
             selectedCity={leaderboard.selectedCity}
           />
         </section>
+
+        {leaderboard.hasSampleEntries ? (
+          <div className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-300 mt-6 rounded-lg border px-4 py-3 text-sm">
+            <strong>Fresh ladder.</strong> Early sample opponents are displayed until more real games are played. Jump in to claim a permanent spot!
+          </div>
+        ) : null}
 
         {podium.length > 0 ? (
           <section className="mt-8 grid gap-4 md:grid-cols-3">
@@ -241,7 +295,8 @@ export default async function LeaderboardPage({
               Rankings
             </h2>
             <span className="text-muted text-sm">
-              {leaderboard.entries.length} players
+              {realEntryCount} players
+              {sampleEntryCount > 0 ? ` · ${sampleEntryCount} demo` : ""}
             </span>
           </div>
 

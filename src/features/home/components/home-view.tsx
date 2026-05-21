@@ -27,7 +27,7 @@ export function HomeView() {
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link href="/play/local">
+          <Link href="/play/guest">
             <Button
               size="lg"
               className="bg-cherry hover:bg-cherry-dark gap-2 text-white"

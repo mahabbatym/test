@@ -309,6 +309,193 @@ function buildMessages() {
     en: "Infinite hearts and custom visual skins.",
   });
 
+  assign("dashboard_stat_games", {
+    kk: "Ойындар",
+    ru: "Игры",
+    ko: "대국 수",
+    en: "Games",
+  });
+  assign("dashboard_stat_games_hint", {
+    kk: "{wins} жеңіс · {losses} жеңіліс · {draws} тең",
+    ru: "{wins} побед · {losses} поражений · {draws} ничьих",
+    ko: "승 {wins} · 패 {losses} · 무 {draws}",
+    en: "{wins} wins · {losses} losses · {draws} draws",
+  });
+  assign("dashboard_stat_winrate", {
+    kk: "Жеңіс пайызы",
+    ru: "Процент побед",
+    ko: "승률",
+    en: "Win rate",
+  });
+  assign("dashboard_stat_winrate_hint", {
+    kk: "Соңғы 20 партия негізінде",
+    ru: "На основе последних 20 игр",
+    ko: "최근 20판 기준",
+    en: "Based on the last 20 games",
+  });
+  assign("dashboard_stat_active", {
+    kk: "Белсенді ойындар",
+    ru: "Активные партии",
+    ko: "진행 중",
+    en: "Active games",
+  });
+  assign("dashboard_stat_active_hint", {
+    kk: "Қазір жалғасып жатқан партиялар",
+    ru: "Партии, которые идут прямо сейчас",
+    ko: "현재 진행 중인 대국",
+    en: "Matches currently in progress",
+  });
+  assign("dashboard_stat_streak", {
+    kk: "Серия",
+    ru: "Серия",
+    ko: "연승/연패",
+    en: "Streak",
+  });
+  assign("dashboard_streak_win", {
+    kk: "{count} жеңіс қатар",
+    ru: "{count} побед подряд",
+    ko: "{count}연승",
+    en: "{count} wins in a row",
+  });
+  assign("dashboard_streak_loss", {
+    kk: "{count} жеңіліс қатар",
+    ru: "{count} поражений подряд",
+    ko: "{count}연패",
+    en: "{count} losses in a row",
+  });
+  assign("dashboard_streak_draw", {
+    kk: "{count} тең ойын",
+    ru: "{count} ничьих",
+    ko: "{count}연속 무승부",
+    en: "{count} draws",
+  });
+  assign("dashboard_streak_none", {
+    kk: "Серия жоқ",
+    ru: "Серии нет",
+    ko: "연속 기록 없음",
+    en: "No streak yet",
+  });
+  assign("dashboard_stat_favorite", {
+    kk: "Сүйікті түс",
+    ru: "Предпочитаемый цвет",
+    ko: "선호 색",
+    en: "Favorite side",
+  });
+  assign("dashboard_stat_favorite_hint", {
+    kk: "Соңғы ойындарға негізделген",
+    ru: "Основано на последних партиях",
+    ko: "최근 대국 기준",
+    en: "Based on your recent games",
+  });
+  assign("dashboard_stat_last", {
+    kk: "Соңғы партия",
+    ru: "Последняя партия",
+    ko: "마지막 대국",
+    en: "Last match",
+  });
+  assign("dashboard_stat_last_hint", {
+    kk: "Уақыт пен күні",
+    ru: "Дата и время",
+    ko: "날짜와 시간",
+    en: "Date and time",
+  });
+  assign("dashboard_stat_last_empty", {
+    kk: "Әлі ойнамадыңыз",
+    ru: "Вы ещё не играли",
+    ko: "아직 대국 없음",
+    en: "No games yet",
+  });
+  assign("dashboard_stat_guest", {
+    kk: "Қонақ",
+    ru: "Гость",
+    ko: "게스트",
+    en: "Guest",
+  });
+  assign("dashboard_rank_title", {
+    kk: "Рейтинг",
+    ru: "Рейтинг",
+    ko: "랭크",
+    en: "Rank",
+  });
+  assign("dashboard_rank_unknown", {
+    kk: "?",
+    ru: "?",
+    ko: "?",
+    en: "?",
+  });
+  assign("dashboard_rank_elo", {
+    kk: "ELO {elo}",
+    ru: "ELO {elo}",
+    ko: "ELO {elo}",
+    en: "ELO {elo}",
+  });
+  assign("dashboard_rank_hint", {
+    kk: "Жаңа партиялар рейтингіңізді жаңартады.",
+    ru: "Новые партии обновят ваш рейтинг.",
+    ko: "새 대국이 랭크를 갱신합니다.",
+    en: "Fresh games will update your position.",
+  });
+  assign("dashboard_color_white", {
+    kk: "Ақ",
+    ru: "Белые",
+    ko: "백",
+    en: "White",
+  });
+  assign("dashboard_color_black", {
+    kk: "Қара",
+    ru: "Чёрные",
+    ko: "흑",
+    en: "Black",
+  });
+  assign("dashboard_color_mixed", {
+    kk: "Аралас",
+    ru: "Смешано",
+    ko: "혼합",
+    en: "Mixed",
+  });
+  assign("dashboard_recent_heading", {
+    kk: "Соңғы ойындар",
+    ru: "Недавние партии",
+    ko: "최근 대국",
+    en: "Recent matches",
+  });
+  assign("dashboard_recent_count", {
+    kk: "матч",
+    ru: "матчей",
+    ko: "경기",
+    en: "matches",
+  });
+  assign("dashboard_recent_color", {
+    kk: "Сіздің түсіңіз",
+    ru: "Ваш цвет",
+    ko: "사용자 색",
+    en: "Your color",
+  });
+  assign("dashboard_recent_empty", {
+    kk: "Әлі матчтар жоқ. Жаңа партия бастаңыз!",
+    ru: "Здесь пока пусто. Запустите новую партию!",
+    ko: "아직 경기 기록이 없습니다. 새 대국을 시작해보세요!",
+    en: "No matches yet. Start a new game!",
+  });
+  assign("dashboard_result_win", {
+    kk: "Жеңіс",
+    ru: "Победа",
+    ko: "승리",
+    en: "Win",
+  });
+  assign("dashboard_result_loss", {
+    kk: "Жеңіліс",
+    ru: "Поражение",
+    ko: "패배",
+    en: "Loss",
+  });
+  assign("dashboard_result_draw", {
+    kk: "Тең",
+    ru: "Ничья",
+    ko: "무승부",
+    en: "Draw",
+  });
+
   // Store
   assign("store_tagline", {
     kk: "Cherry Economy",
