@@ -111,7 +111,3 @@ src/
 2. Copy values into `.env.local` (see `.env.example`)
 3. Run migrations from `supabase/` directory
 4. Configure Auth redirect URL: `http://localhost:3000/auth/callback`
-
-## License
-
-Private — all rights reserved.
