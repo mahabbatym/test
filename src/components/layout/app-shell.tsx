@@ -4,18 +4,21 @@ import {
   BarChart3,
   Crown,
   LayoutDashboard,
+  LogOut,
   Moon,
   Sun,
   UserCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 
 import { CherryLogo } from "@/components/auth/cherry-logo";
 import { FeedbackWidget } from "@/components/layout/feedback-widget";
 import { Button } from "@/components/ui/button";
 import { locales } from "@/lib/i18n";
 import { cn } from "@/lib/utils/cn";
+import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/providers/i18n-provider";
 import { useTheme } from "@/providers/theme-provider";
 
@@ -25,8 +28,22 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { locale, setLocale, t } = useI18n();
   const { theme, toggleTheme } = useTheme();
+  const [signingOut, setSigningOut] = useState(false);
+
+  const handleSignOut = useCallback(async () => {
+    setSigningOut(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
+  }, [router]);
 
   const navItems = [
     { href: "/dashboard", label: t("dashboard"), icon: LayoutDashboard },
@@ -95,6 +112,16 @@ export function AppShell({ children }: AppShellProps) {
             )}
             {t("theme")}
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void handleSignOut()}
+            disabled={signingOut}
+            className="w-full justify-start gap-2"
+          >
+            <LogOut className="size-4" />
+            {signingOut ? t("auth_loading_sign_out") : t("auth_sign_out")}
+          </Button>
           <FeedbackWidget />
         </div>
       </aside>
@@ -129,6 +156,16 @@ export function AppShell({ children }: AppShellProps) {
               ) : (
                 <Moon className="size-4" />
               )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void handleSignOut()}
+              disabled={signingOut}
+              className="size-9 p-0"
+              aria-label={t("auth_sign_out")}
+            >
+              <LogOut className="size-4" />
             </Button>
           </div>
         </div>

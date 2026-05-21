@@ -6,54 +6,55 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useHearts } from "@/hooks/use-hearts";
 import { cn } from "@/lib/utils/cn";
+import {
+  BOARD_SKIN_CONFIG,
+  DEFAULT_BOARD_SKIN,
+  DEFAULT_PIECE_SKIN,
+  PIECE_SKIN_CONFIG,
+  VISUAL_THEME_EVENT,
+  type BoardSkinId,
+  type PieceSkinId,
+  type VisualThemeDetail,
+} from "@/lib/visuals";
 import { useI18n } from "@/providers/i18n-provider";
-
-const boardSkins = [
-  {
-    id: "walnut",
-    swatches: ["#f4e4cf", "#a96d47"],
-    labelKey: "store_board_walnut" as const,
-  },
-  {
-    id: "obsidian",
-    swatches: ["#283040", "#080b12"],
-    labelKey: "store_board_obsidian" as const,
-  },
-  {
-    id: "crimson",
-    swatches: ["#ffd9d9", "#b91c1c"],
-    labelKey: "store_board_crimson" as const,
-  },
-];
-
-const pieceSkins = [
-  { id: "Minimalist Vector", labelKey: "store_piece_minimal" as const },
-  { id: "Heavy Metal Metallic", labelKey: "store_piece_metal" as const },
-  { id: "3D Retro", labelKey: "store_piece_retro" as const },
-  { id: "Geometric Anime", labelKey: "store_piece_geometric" as const },
-];
 
 export function StoreDashboard() {
   const { hearts, maxHearts, isPremium, nextHeartInMs, setPremium } = useHearts();
-  const [boardSkin, setBoardSkin] = useState("walnut");
-  const [pieceSkin, setPieceSkin] = useState("Minimalist Vector");
+  const [boardSkin, setBoardSkin] = useState<BoardSkinId>(DEFAULT_BOARD_SKIN);
+  const [pieceSkin, setPieceSkin] = useState<PieceSkinId>(DEFAULT_PIECE_SKIN);
   const { t } = useI18n();
 
   useEffect(() => {
-    setBoardSkin(window.localStorage.getItem("cherry-board-skin") ?? "walnut");
-    setPieceSkin(
-      window.localStorage.getItem("cherry-piece-skin") ?? "Minimalist Vector",
-    );
+    const storedBoard = window.localStorage.getItem("cherry-board-skin") as
+      | BoardSkinId
+      | null;
+    const storedPiece = window.localStorage.getItem("cherry-piece-skin") as
+      | PieceSkinId
+      | null;
+
+    const nextBoard = storedBoard && storedBoard in BOARD_SKIN_CONFIG ? storedBoard : DEFAULT_BOARD_SKIN;
+    const nextPiece = storedPiece && storedPiece in PIECE_SKIN_CONFIG ? storedPiece : DEFAULT_PIECE_SKIN;
+
+    setBoardSkin(nextBoard);
+    setPieceSkin(nextPiece);
+    dispatchVisualTheme(nextBoard, nextPiece);
   }, []);
 
-  function saveBoardSkin(value: string) {
-    setBoardSkin(value);
-    window.localStorage.setItem("cherry-board-skin", value);
+  function dispatchVisualTheme(board: BoardSkinId, piece: PieceSkinId) {
+    const detail: VisualThemeDetail = { boardSkin: board, pieceSkin: piece };
+    window.dispatchEvent(new CustomEvent(VISUAL_THEME_EVENT, { detail }));
   }
 
-  function savePieceSkin(value: string) {
+  function saveBoardSkin(value: BoardSkinId) {
+    setBoardSkin(value);
+    window.localStorage.setItem("cherry-board-skin", value);
+    dispatchVisualTheme(value, pieceSkin);
+  }
+
+  function savePieceSkin(value: PieceSkinId) {
     setPieceSkin(value);
     window.localStorage.setItem("cherry-piece-skin", value);
+    dispatchVisualTheme(boardSkin, value);
   }
 
   const nextHeartMinutes = Math.ceil(nextHeartInMs / 60000);
@@ -129,14 +130,14 @@ export function StoreDashboard() {
         <div className="mt-6">
           <p className="text-sm font-medium">{t("store_board_colors")}</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
-            {boardSkins.map((skin) => (
+            {Object.entries(BOARD_SKIN_CONFIG).map(([id, skin]) => (
               <button
-                key={skin.id}
+                key={id}
                 type="button"
-                onClick={() => saveBoardSkin(skin.id)}
+                onClick={() => saveBoardSkin(id as BoardSkinId)}
                 className={cn(
                   "border-border rounded-xl border p-3 text-left transition",
-                  boardSkin === skin.id &&
+                  boardSkin === id &&
                     "border-red-500/40 bg-red-500/10 text-cherry",
                 )}
               >
@@ -158,14 +159,14 @@ export function StoreDashboard() {
         <div className="mt-6">
           <p className="text-sm font-medium">{t("store_piece_themes")}</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {pieceSkins.map((skin) => (
+            {Object.entries(PIECE_SKIN_CONFIG).map(([id, skin]) => (
               <button
-                key={skin.id}
+                key={id}
                 type="button"
-                onClick={() => savePieceSkin(skin.id)}
+                onClick={() => savePieceSkin(id as PieceSkinId)}
                 className={cn(
                   "border-border flex items-center justify-between rounded-xl border px-3 py-3 text-sm transition",
-                  pieceSkin === skin.id &&
+                  pieceSkin === id &&
                     "border-red-500/40 bg-red-500/10 text-cherry",
                 )}
               >

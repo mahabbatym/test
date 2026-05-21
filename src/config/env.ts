@@ -19,7 +19,7 @@ const clientEnvSchema = z.object({
     .default("")
     .transform(emptyToUndefined)
     .pipe(z.string().url().optional())
-    .transform((v) => v ?? "http://localhost:3000"),
+    .transform((v) => v ?? "https://cherry-peach.vercel.app/login"),
   NEXT_PUBLIC_SOCKET_URL: optionalUrl,
 });
 

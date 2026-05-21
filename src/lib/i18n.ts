@@ -704,6 +704,18 @@ function buildMessages() {
     ko: "계정 만들기",
     en: "Create account",
   });
+  assign("auth_sign_out", {
+    kk: "Шығу",
+    ru: "Выйти",
+    ko: "로그아웃",
+    en: "Sign out",
+  });
+  assign("auth_loading_sign_out", {
+    kk: "Шығуда...",
+    ru: "Выходим...",
+    ko: "로그아웃 중...",
+    en: "Signing out...",
+  });
   assign("auth_no_account", {
     kk: "Есеп жоқ па?",
     ru: "Нет аккаунта?",
