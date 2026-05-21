@@ -158,10 +158,6 @@ export function useStockfish(): UseStockfishResult {
       if (!line) return;
 
       if (line === "uciok") {
-        worker.postMessage("setoption name Threads value 1");
-        worker.postMessage("setoption name Hash value 16");
-        // Болашақта .wasm файлын қатесіз табуы үшін локальді папканы нұсқаймыз
-        worker.postMessage("setoption name WebAssemblyPath value /workers/package/");
         worker.postMessage("isready");
         return;
       }

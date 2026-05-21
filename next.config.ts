@@ -12,14 +12,6 @@ const nextConfig: NextConfig = {
             value:
               "font-src 'self' https://k2mkucxia43oc7fa.public.blob.vercel-storage.com; worker-src 'self' blob:;",
           },
-          {
-            key: "Cross-Origin-Embedder-Policy",
-            value: "credentialless",
-          },
-          {
-            key: "Cross-Origin-Opener-Policy",
-            value: "same-origin",
-          },
         ],
       },
     ];

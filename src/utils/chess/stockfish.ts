@@ -2,7 +2,7 @@ import type { Square } from "chess.js";
 
 import type { PromotionPiece } from "@/features/chess";
 
-export const STOCKFISH_WORKER_URL = "/workers/package/stockfish.js";
+export const STOCKFISH_WORKER_URL = "/workers/stockfish-lite.js";
 
 export const STOCKFISH_DEFAULT_LEVEL = 4;
 
