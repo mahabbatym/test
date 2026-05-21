@@ -6,36 +6,38 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useHearts } from "@/hooks/use-hearts";
 import { cn } from "@/lib/utils/cn";
+import { useI18n } from "@/providers/i18n-provider";
 
 const boardSkins = [
   {
     id: "walnut",
-    label: "Walnut Classic",
     swatches: ["#f4e4cf", "#a96d47"],
+    labelKey: "store_board_walnut" as const,
   },
   {
     id: "obsidian",
-    label: "Midnight Obsidian",
     swatches: ["#283040", "#080b12"],
+    labelKey: "store_board_obsidian" as const,
   },
   {
     id: "crimson",
-    label: "Vibrant Crimson Cherry",
     swatches: ["#ffd9d9", "#b91c1c"],
+    labelKey: "store_board_crimson" as const,
   },
 ];
 
 const pieceSkins = [
-  "Minimalist Vector",
-  "Heavy Metal Metallic",
-  "3D Retro",
-  "Geometric Anime",
+  { id: "Minimalist Vector", labelKey: "store_piece_minimal" as const },
+  { id: "Heavy Metal Metallic", labelKey: "store_piece_metal" as const },
+  { id: "3D Retro", labelKey: "store_piece_retro" as const },
+  { id: "Geometric Anime", labelKey: "store_piece_geometric" as const },
 ];
 
 export function StoreDashboard() {
   const { hearts, maxHearts, isPremium, nextHeartInMs, setPremium } = useHearts();
   const [boardSkin, setBoardSkin] = useState("walnut");
   const [pieceSkin, setPieceSkin] = useState("Minimalist Vector");
+  const { t } = useI18n();
 
   useEffect(() => {
     setBoardSkin(window.localStorage.getItem("cherry-board-skin") ?? "walnut");
@@ -61,14 +63,11 @@ export function StoreDashboard() {
       <section className="border-border bg-card rounded-xl border p-5 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-cherry text-sm font-medium">Premium Plan</p>
+            <p className="text-cherry text-sm font-medium">{t("store_plan_label")}</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight">
               Cherry Pro
             </h2>
-            <p className="text-muted mt-3 text-sm leading-6">
-              Infinite AI hearts, visual customization, and future premium sound
-              packs.
-            </p>
+            <p className="text-muted mt-3 text-sm leading-6">{t("store_plan_text")}</p>
           </div>
           <div className="bg-cherry/10 text-cherry flex size-12 items-center justify-center rounded-xl">
             <Crown className="size-6" />
@@ -78,7 +77,7 @@ export function StoreDashboard() {
         <div className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4">
           <div className="flex items-center justify-between">
             <span className="font-medium">
-              {isPremium ? "Cherry Pro active" : "Free tier"}
+              {isPremium ? t("store_status_active") : t("store_status_free")}
             </span>
             <span className="text-cherry text-xl font-semibold">
               {isPremium ? "∞" : `${hearts}/${maxHearts}`}
@@ -86,22 +85,24 @@ export function StoreDashboard() {
           </div>
           <p className="text-muted mt-2 text-sm">
             {isPremium
-              ? "AI mode is unlimited."
+              ? t("store_status_unlimited")
               : nextHeartInMs > 0
-                ? `Next heart in about ${nextHeartMinutes} min.`
-                : "Hearts regenerate every 2 hours."}
+                ? t("store_status_next_heart").replace("{minutes}", String(nextHeartMinutes))
+                : t("store_status_regen")}
           </p>
         </div>
 
         <div className="mt-5 space-y-3">
-          {["Infinite AI games", "Custom board skins", "Custom piece themes"].map(
-            (item) => (
-              <div key={item} className="flex items-center gap-2 text-sm">
-                <Check className="text-cherry size-4" />
-                {item}
-              </div>
-            ),
-          )}
+          {[
+            t("store_feature_infinite"),
+            t("store_feature_board"),
+            t("store_feature_pieces"),
+          ].map((item) => (
+            <div key={item} className="flex items-center gap-2 text-sm">
+              <Check className="text-cherry size-4" />
+              {item}
+            </div>
+          ))}
         </div>
 
         <Button
@@ -110,7 +111,7 @@ export function StoreDashboard() {
           className="mt-6 w-full gap-2"
         >
           <Heart className="size-4" />
-          {isPremium ? "Manage Cherry Pro" : "Upgrade to Cherry Pro"}
+          {isPremium ? t("store_button_manage") : t("store_button_upgrade")}
         </Button>
       </section>
 
@@ -120,15 +121,13 @@ export function StoreDashboard() {
             <Palette className="size-5" />
           </div>
           <div>
-            <h2 className="font-semibold tracking-tight">Visual Skins</h2>
-            <p className="text-muted text-sm">
-              Premium-ready configuration saved locally.
-            </p>
+            <h2 className="font-semibold tracking-tight">{t("store_visual_title")}</h2>
+            <p className="text-muted text-sm">{t("store_visual_subtitle")}</p>
           </div>
         </div>
 
         <div className="mt-6">
-          <p className="text-sm font-medium">Board Colors</p>
+          <p className="text-sm font-medium">{t("store_board_colors")}</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             {boardSkins.map((skin) => (
               <button
@@ -150,27 +149,27 @@ export function StoreDashboard() {
                     />
                   ))}
                 </div>
-                <p className="mt-3 text-sm font-medium">{skin.label}</p>
+                <p className="mt-3 text-sm font-medium">{t(skin.labelKey)}</p>
               </button>
             ))}
           </div>
         </div>
 
         <div className="mt-6">
-          <p className="text-sm font-medium">Piece Themes</p>
+          <p className="text-sm font-medium">{t("store_piece_themes")}</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {pieceSkins.map((skin) => (
               <button
-                key={skin}
+                key={skin.id}
                 type="button"
-                onClick={() => savePieceSkin(skin)}
+                onClick={() => savePieceSkin(skin.id)}
                 className={cn(
                   "border-border flex items-center justify-between rounded-xl border px-3 py-3 text-sm transition",
-                  pieceSkin === skin &&
+                  pieceSkin === skin.id &&
                     "border-red-500/40 bg-red-500/10 text-cherry",
                 )}
               >
-                <span>{skin}</span>
+                <span>{t(skin.labelKey)}</span>
                 <Sparkles className="size-4" />
               </button>
             ))}

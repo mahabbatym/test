@@ -17,7 +17,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = window.localStorage.getItem("cherry-locale");
-    if (stored === "kk" || stored === "ru" || stored === "ko") {
+    if (stored === "kk" || stored === "ru" || stored === "ko" || stored === "en") {
       setLocaleState(stored);
     }
   }, []);
